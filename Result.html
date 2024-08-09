@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Results</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .result-table th, .result-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        .result-table th {
+            background-color: #f2f2f2;
+        }
+        .print-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .print-btn:hover {
+            background-color: #218838;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                border: none;
+                box-shadow: none;
+            }
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Department of Mechanical Engineering</h1>
+    <h2>Continuous Assessment Test - 1</h2>
+    <h2>Student Result Portal</h2>
+    <h2>III YEAR</h2>
+    <input type="text" id="regNo" placeholder="Enter Registration Number">
+    <button onclick="getResult()">Get Result</button>
+
+    <div class="result" id="result"></div>
+
+    <button class="print-btn" id="printBtn" style="display: none;" onclick="window.print()">Print Result</button>
+</div>
+
+<script>
+    // Sample Data from CSV (Embed your actual data here)
+    const data = `S.No,Register No,Name,4020510 DOME,4020520 TE-II,4020531 CIM,** RESULT,** NO OF SUBJECT FAIL,
+1,23202380,GOKUL Y,30,29,11,FAIL,1
+2,22202291,RICKY RAJ K,14,16,2,FAIL,3
+3,22221262,SHESHATRI S,17,20,2,FAIL,2
+4,23202343,NAVEENKUMAR K S,15,26,2,FAIL,2
+5,23297200,NAVENDHAR B,A,A,A,FAIL,3
+6,23223703,NAVIN R,12,7,6,FAIL,3
+7,23223704,NITHISHWARAN G,20,16,A,FAIL,2
+8,23202344,PRADEESH N,A,23,A,FAIL,2
+9,23223705,PRAKASH A,A,A,A,FAIL,3
+10,23202346,PRAVEEN KUMAR K M,42,25,13,FAIL,1
+11,23202347,PRAVEEN KUMAR S,14,20,2,FAIL,2
+12,23202348,PRAVEENRAJ K,13,21,3,FAIL,2
+13,23223706,PURUSOTHAMAN S K,3,7,2,FAIL,3
+14,23202349,PUSPAK KUMAR,6,A,9,FAIL,3
+15,23202350,RAGHUL J,7,20,1,FAIL,2
+16,23223707,RAHUL U,15,20,7,FAIL,2
+17,23223709,RAJKUMAR V,13,12,4,FAIL,3
+18,23297201,RAKESH KUMAR S,15,20,9,FAIL,2
+19,23202352,RUBESHWARAN S,35,30,24,PASS,0
+20,23202353,SAHAEL M,A,A,A,FAIL,3
+21,23223711,SAI SAJIN M,3,2,0,FAIL,3
+22,23202354,SAMUEL DEVADASAN V,9,27,20,FAIL,1
+23,23223712,SANGEETHRAJ E,A,A,A,FAIL,3
+24,23290797,SANJAY B,6,17,8,FAIL,3
+25,23290798,SANJAY S,20,29,A,FAIL,1
+26,23223714,SANJAYKUMAR L,15,20,0,FAIL,2
+27,23202355,SANTHOSH KUMAR K,30,28,20,PASS,0
+28,23290799,SANTHOSH P,20,12,A,FAIL,2
+29,23202357,SASIDHARAN R,30,22,10,FAIL,1
+30,23202359,SATHISH KUMAR R,2,18,10,FAIL,3
+31,23290800,SHIVASAI K,8,20,6,FAIL,2
+32,23202360,SHYAM G,20,20,2,FAIL,1
+33,23223717,SIVARAMAN R,2,4,3,FAIL,3
+34,23223718,SNEHITH M A,A,A,A,FAIL,3
+35,23202361,SREE PACHAIAPPAN S,16,22,13,FAIL,2
+36,23290801,SUHAIL HAMEED S S,17,15,0,FAIL,3
+37,23202363,SUJAN S,36,32,21,PASS,0
+38,23202364,UDAYA MOORTHY S,A,A,A,FAIL,3
+39,23297206,VASANTHARAJAN P,A,A,A,FAIL,3
+40,23202365,VENGADESH P,5,6,3,FAIL,3
+41,23223724,VIGNESH D,A,0,0,FAIL,3
+42,23223727,VIGNESH V,20,20,15,FAIL,1
+43,23223729,VIGNESHWARAN R,A,A,A,FAIL,3
+44,23202366,VISHAL A,12,23,1,FAIL,2
+45,23223730,VISHWA S,2,7,A,FAIL,3
+46,23202367,VISHWANATH M,20,20,13,FAIL,1
+47,23202368,YASMEEN FATHIMA S,20,32,A,FAIL,1
+1,22220021,SIBI V,0,4,A,FAIL,3
+2,22202304,TAMILMANI B,0,0,3,FAIL,3
+3,23202313,ABDUS SAMADH S,21,20,33,PASS,0
+4,23223675,ABRAR HAQ C,A,A,A,FAIL,3
+5,23202314,ADALARASU A,7,A,14,FAIL,3
+6,23297195,AJAY P,A,A,A,FAIL,3
+7,23223677,AKASH B,9,8,A,FAIL,3
+8,23202316,ARAVIND M,7,6,13,FAIL,3
+9,23297196,ARAVINDAN B,12,7,A,FAIL,3
+10,23202317,ARUN G,23,28,29,PASS,0
+11,23202318,ASHVAN S,12,20,22,FAIL,1
+12,23202319,ASHWANTH KUMAR S,11,22,37,FAIL,1
+13,23290784,BARATH M,0,2,A,FAIL,3
+14,23290785,BHAVAN KALYAN P,7,1,18,FAIL,3
+15,23297197,BIPIN SINGH D,12,0,5,FAIL,3
+16,23223679,DEVENDRAN R,0,1,16,FAIL,3
+17,23223681,ESAC L,2,1,1,FAIL,3
+18,23223682,FAYAZ Y,5,4,A,FAIL,3
+19,23223683,FAZLUDEEN S,8,6,10,FAIL,3
+20,23223684,FYZEE Z,0,A,2,FAIL,3
+21,23202323,GOPALA KRISHNAN R N,20,21,16,FAIL,1
+22,23223686,HAFEEZUR RAHAMAN S,0,0,1,FAIL,3
+23,23202326,HARI KRISHNA R,3,0,10,FAIL,3
+24,23202327,HARI PRASATH K A,50,20,23,PASS,0
+25,23290787,HARIKARAN P K,20,13,26,FAIL,1
+26,23297198,HARISH KUMAR S,3,4,20,FAIL,2
+27,23297199,JAGAN M,33,4,20,FAIL,1
+28,23202330,JAIRAJ K,1,5,20,FAIL,2
+29,23223689,JAYA VISHWA A,31,20,10,FAIL,1
+30,23223690,JEEVAN RAJ P,0,0,A,FAIL,3
+31,23223691,JEEVANANDAM P,7,0,3,FAIL,3
+32,23290788,KALIYAMOORTHI R,18,A,20,FAIL,2
+33,23202331,KANNAN V,A,A,A,FAIL,3
+34,23223695,KARTHIK K,0,0,A,FAIL,3
+35,23202332,KATHIRVEL P,3,0,23,FAIL,2
+36,23290789,KISHORE S,7,0,A,FAIL,3
+37,23223697,KISHORE V,7,1,4,FAIL,3
+38,23223698,LINGESHWARAN K,20,1,7,FAIL,2
+39,23290791,MANIKANDAN K,0,0,7,FAIL,3
+40,23202335,MANOJ S,28,7,8,FAIL,2
+41,23202337,MIDHUN SUNDAR S,23,20,25,PASS,0
+42,23202339,MOHAMMED AMEEN P,25,22,34,PASS,0
+43,23202340,MOHAMMED AMEERULE B R,24,20,23,PASS,0
+44,23223702,MOHAMMED HUSSAIN Z,1,6,14,FAIL,3
+45,23202341,MUKESH J,32,5,A,FAIL,2
+46,23290792,MUKESHKUMAR R,38,31,39,PASS,0
+47,23202342,NARESH B,A,A,A,FAIL,3
+`;
+
+    // Convert CSV to JSON
+    const parseCSV = (csv) => {
+        const lines = csv.split("\n");
+        const headers = lines[0].split(",");
+        const students = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const currentLine = lines[i].split(",");
+            const student = {};
+
+            for (let j = 0; j < headers.length; j++) {
+                student[headers[j]] = currentLine[j];
+            }
+
+            students.push(student);
+        }
+        return students;
+    };
+
+    const studentsData = parseCSV(data);
+
+    function getResult() {
+        const regNo = document.getElementById('regNo').value;
+        const resultDiv = document.getElementById('result');
+        const printBtn = document.getElementById('printBtn');
+
+        const student = studentsData.find(s => s["Register No"] === regNo);
+
+        if (student) {
+            resultDiv.innerHTML = `
+                <h3>Student Name : ${student.Name}</h3>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Subject Name</th>
+                            <th>Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>4020510</td>
+                            <td>DOME</td>
+                            <td>${student["4020510 DOME"]}</td>
+                        </tr>
+                        <tr>
+                            <td>4020520</td>
+                            <td>TE-II</td>
+                            <td>${student["4020520 TE-II"]}</td>
+                        </tr>
+                        <tr>
+                            <td>4020531</td>
+                            <td>CIM</td>
+                            <td>${student["4020531 CIM"]}</td>
+                        </tr>
+                        <tr>
+                            <td>**</td>
+                            <td>RESULT</td>
+                            <td>${student["** RESULT"]}</td>
+                        </tr>
+                        <tr>
+                            <td>**</td>
+                            <td>NO OF SUBJECT FAIL</td>
+                            <td>${student["** NO OF SUBJECT FAIL"]}</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            `;
+            printBtn.style.display = 'block';
+        } else {
+            resultDiv.innerHTML = '<p style="color:red;">Registration number not found.</p>';
+            printBtn.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
